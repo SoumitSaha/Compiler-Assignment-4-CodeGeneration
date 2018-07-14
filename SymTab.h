@@ -30,6 +30,7 @@ class SymbolInfo
         bool funcdefined;
         std::vector <std::string> parameters;
         int tabid;
+        std::string retlabel;
 
         SymbolInfo(std::string nval, std::string tval);
         SymbolInfo(std::string tval);

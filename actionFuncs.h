@@ -57,7 +57,7 @@ SymbolInfo* variabletoid(SymbolInfo* var, SymbolInfo* id){
 		str.append("Undeclared Variable : ");
 		str.append(id->Getsname());
 		writeerr(str);
-		//errprinted();
+		errprinted();
 		return 0;
 	}
 	else if(temp->kindofID != "VAR"){
@@ -65,7 +65,7 @@ SymbolInfo* variabletoid(SymbolInfo* var, SymbolInfo* id){
 		str.append(id->Getsname());
 		str.append(" is not a Variable.");
 		writeerr(str);
-		//errprinted();
+		errprinted();
 		return 0;	
 	}
 	else{
@@ -88,7 +88,7 @@ SymbolInfo* variabletoarray(SymbolInfo * var, SymbolInfo * id, SymbolInfo * exp)
 		str.append("Undeclared Variable : ");
 		str.append(id->Getsname());
 		writeerr(str);
-		//errprinted();
+		errprinted();
 		return 0;
 	}
 	else if(temp->kindofID != "ARR"){
@@ -96,13 +96,13 @@ SymbolInfo* variabletoarray(SymbolInfo * var, SymbolInfo * id, SymbolInfo * exp)
 		str.append(id->Getsname());
 		str.append(" is not an array.");
 		writeerr(str);
-		//errprinted();
+		errprinted();
 		return 0;	
 	}
 	else{
 		if(exp->kindofVariable == "FLOAT"){
 			writeerr("array index can't be float.");
-			//errprinted();
+			errprinted();
 			return 0;
 		}
 		SymbolInfo* temp2;
@@ -130,7 +130,7 @@ void func_dec(SymbolInfo * tysp, SymbolInfo * id){
 		str.append("Multiple declaration of ");
 		str.append(id->Getsname());
 		writeerr(str);
-		//errprinted();
+		errprinted();
 		return ;
 	}
 	else{
@@ -138,8 +138,9 @@ void func_dec(SymbolInfo * tysp, SymbolInfo * id){
 		SymbolInfo* temp2 = table.LookUp(id->Getsname());
 		temp2->kindofID = "FUNC";
 		temp2->funcrettype = tysp->kindofVariable;
-		asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
+		//asmdatavars.push_back(temp2->Getsname());
 		id->funcrettype = tysp->kindofVariable;
+		temp2->retlabel = string(newLabel());
 		int sizearg = argsize();
 		for(int i = 0; i<argsize(); i++){
 			temp2->parameters.push_back(argumentlist[i]);					
@@ -154,7 +155,7 @@ void declistcomid(SymbolInfo * id){
 	cout << "declistcomid func" << endl;
 	if(lastVarType == "VOID"){
 		writeerr("variable type can't be void.");
-		//errprinted();
+		errprinted();
 		return;
 	}
 	else{
@@ -164,7 +165,7 @@ void declistcomid(SymbolInfo * id){
 			str.append("Multiple declaration of ");
 			str.append(id->Getsname());
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			return;	
 		}
 		else{
@@ -173,7 +174,7 @@ void declistcomid(SymbolInfo * id){
 			temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "VAR";
-			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
+			asmdatavars.append(temp2->Getsname() + to_string(temp2->tabid) + + " dw ?\n");
 		}
 	}
 }
@@ -182,7 +183,7 @@ void declistarr(SymbolInfo * id, SymbolInfo * constint){
 	cout << "declistarr func" << endl;
 	if(lastVarType == "VOID"){
 		writeerr("array type can't be void.");
-		//errprinted();
+		errprinted();
 		return;
 	}
 	else{
@@ -192,7 +193,7 @@ void declistarr(SymbolInfo * id, SymbolInfo * constint){
 			str.append("Multiple declaration of ");
 			str.append(id->Getsname());
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			return;
 		}
 		else{
@@ -201,7 +202,7 @@ void declistarr(SymbolInfo * id, SymbolInfo * constint){
 			temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "ARR";
-			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
+			asmdatavars.append(temp2->Getsname() + to_string(temp2->tabid) + " dw " + constint->Getsname() + " dup(?)\n");
 		}
 		return;
 	}
@@ -211,7 +212,7 @@ void onlyid(SymbolInfo * id){
 	cout << "onlyid func" << endl;
 	if(lastVarType == "VOID"){
 		writeerr("variable type can't be void");
-		//errprinted();
+		errprinted();
 		return;
 	}
 	else{
@@ -221,7 +222,7 @@ void onlyid(SymbolInfo * id){
 			str.append("Multiple declaration of ");
 			str.append(id->Getsname());
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			return;
 		}
 		else{
@@ -229,7 +230,7 @@ void onlyid(SymbolInfo * id){
 			SymbolInfo* temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "VAR";
-			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
+			asmdatavars.append(temp2->Getsname() + to_string(temp2->tabid) + " dw ?\n");
 		}
 	}
 }
@@ -238,7 +239,7 @@ void onlyarray(SymbolInfo * id, SymbolInfo * constint){
 	cout << "onlyarray func" << endl;
 	if(lastVarType == "VOID"){
 		writeerr("array type can't be void");
-		//errprinted();
+		errprinted();
 		return;
 	}
 	else{
@@ -248,7 +249,7 @@ void onlyarray(SymbolInfo * id, SymbolInfo * constint){
 			str.append("Multiple declaration of ");
 			str.append(id->Getsname());
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			return;
 		}
 		else{
@@ -257,21 +258,14 @@ void onlyarray(SymbolInfo * id, SymbolInfo * constint){
 			temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "ARR";
-			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
+			asmdatavars.append(temp2->Getsname() + to_string(temp2->tabid) + " dw " + constint->Getsname() + " dup(?)\n");
 		}
 	}
 }
 
 void func_def(SymbolInfo * tysp, SymbolInfo * id){
 	cout << "func_def func" << endl;
-	SymbolInfo *temp = table.LookUp(id->Getsname());
-	//if(argsize() != IDarguments){
-	//	string str = "Parameter mismatch for Function ";
-	//	str.append(id->Getsname());
-	//	writeerr(str);
-	//	clrarg();
-	//	return;
-	//}												
+	SymbolInfo *temp = table.LookUp(id->Getsname());									
 	if(temp != NULL){
 		id->funcrettype = temp->funcrettype;
 		if(temp->funcdefined == true){
@@ -279,7 +273,7 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 			str.append(id->Getsname());
 			str.append(" alredy defined.");
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			clrarg();
 			IDarguments = 0;
 			return;
@@ -288,7 +282,7 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 			string str = "Return type mismatch for Function ";
 			str.append(id->Getsname());
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			clrarg();
 			IDarguments = 0;
 			return; 
@@ -297,7 +291,7 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 			string str = "Parameter mismatch for Function ";
 			str.append(id->Getsname());
 			writeerr(str);
-			//errprinted();
+			errprinted();
 			IDarguments = 0;
 			clrarg();
 			return;					
@@ -308,7 +302,7 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 					string str = "Parameter mismatch for Function ";
 					str.append(id->Getsname());
 					writeerr(str);
-					//errprinted();
+					errprinted();
 					IDarguments = 0;
 					clrarg();
 					return;		
@@ -321,8 +315,10 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 		SymbolInfo* temp = table.LookUp(id->Getsname());
 		temp->kindofID = "FUNC";
 		temp->funcrettype = tysp->kindofVariable;
-		asmdatavars.push_back(temp->Getsname() + to_string(temp->tabid));
+		//asmdatavars.push_back(temp->Getsname() + to_string(temp->tabid));
 		id->funcrettype = tysp->kindofVariable;
+		temp->retlabel = string(newLabel());
+		id->retlabel = temp->retlabel;
 		for(int i = 0; i<argsize(); i++){
 			temp->parameters.push_back(argumentlist[i]);					
 		}
@@ -339,22 +335,22 @@ SymbolInfo * varassignlogic(SymbolInfo* exp, SymbolInfo* var, SymbolInfo* log_ex
 	if(varType == "INT"){
 		if(var->kindofID == "VAR"){
 			if(log_exp->kindofVariable != "INT"){
-				writewarning("Type mismatch.");
-				//errprinted();
+				writewarning("Type mismatch case 1. " + log_exp->kindofVariable);
+				errprinted();
 			}
 		}
 		else if(var->kindofID == "ARR"){
 			if(log_exp->kindofVariable != "INT"){
-				writewarning("Type mismatch.");
-				//errprinted();
+				writewarning("Type mismatch case 2.");
+				errprinted();
 			}
 		}
 	}
 	else if(varType == "FLOAT"){
 		if(var->kindofID == "ARR"){
 			if(log_exp->kindofVariable == "INT"){
-				writewarning("Type mismatch.");
-				//errprinted();
+				writewarning("Type mismatch case 3.");
+				errprinted();
 			}
 		}
 	}
@@ -373,7 +369,7 @@ SymbolInfo* varinc(SymbolInfo* var){
 	cout << "varinc func" << endl;
 	if(var->kindofVariable == "FUNC"){
 		writeerr("Function can't be incremented or decremented.");
-		//errprinted();
+		errprinted();
 		return 0;
 	}
 	return var;
@@ -383,7 +379,7 @@ SymbolInfo* vardec(SymbolInfo* var){
 	cout << "vardec func" << endl;
 	if(var->kindofVariable == "FUNC"){
 		writeerr("Function can't be incremented or decremented.");
-		//errprinted();
+		errprinted();
 		return 0;
 	}
 	return var;
@@ -399,7 +395,7 @@ SymbolInfo* simprelopsimp(SymbolInfo* rel_exp, SymbolInfo* sim_exp1, SymbolInfo*
 
 	if(simex3 != simex1){
 		writeerr("Type mismatch.");
-		//errprinted();
+		errprinted();
 	}
 	return temp;
 }
@@ -503,7 +499,7 @@ SymbolInfo* termmulopunary(SymbolInfo* term1, SymbolInfo* term2, SymbolInfo* mul
 		temp->kindofID = "VAR";
 		if(term2->kindofVariable != "INT" || una_exp->kindofVariable != "INT") {
 			writeerr("Unsuported operand for mod operator");
-			//errprinted();
+			errprinted();
 			return 0;
 		}
 		return temp;

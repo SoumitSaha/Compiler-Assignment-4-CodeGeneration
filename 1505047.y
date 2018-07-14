@@ -24,13 +24,13 @@ vector<string> argumentlist;
 int warnings = 0;
 int argset = 0;
 int paraset = 0;
-vector<string>asmdatavars;
+string asmdatavars = "";
 
 
 void yyerror(const char *s){
 }
 
-ofstream logFile, errorFile;
+ofstream logFile, errorFile, asmFile;
 
 SymbolTable table(15);
 vector<SymbolInfo> parameters;
@@ -101,7 +101,7 @@ char *newTemp()
 %token <value> CONST_FLOAT
 %token <value> CONST_CHAR
 
-%type <value>type_specifier expression logic_expression rel_expression simple_expression term unary_expression factor variable program unit var_declaration func_declaration func_definition parameter_list compound_statement statements declaration_list statement expression_statement argument_list arguments
+%type <value>type_specifier expression logic_expression rel_expression simple_expression term unary_expression factor variable program unit var_declaration func_declaration func_definition parameter_list compound_statement statements declaration_list statement expression_statement argument_list arguments start
 
 %nonassoc second_precedence
 %nonassoc ELSE
@@ -109,7 +109,18 @@ char *newTemp()
 
 %%
 
-start : program				{	//writelog("start : program");			
+start : program				{	//writelog("start : program");
+				if(!semErrors && !err_count && !warnings){
+					$$ = $1;
+					asmFile << ".model small\n";
+					asmFile << ".stack 100h\n";
+					asmFile << ".data\n";
+					asmFile << asmdatavars;
+					asmFile << ".code\n";
+					asmFile << $$->code;
+					asmFile << "\nDECIMAL_OUT PROC NEAR\npush ax\npush bx\npush cx\npush dx\nor ax,ax\njge enddif\npush ax\nmov dl,'-'\nmov ah,2\nint 21h\npop ax\nneg ax\nenddif:\nxor cx,cx\nmov bx,10d\nrepeat:\nxor dx,dx\ndiv bx\npush dx\ninc cx\nor ax,ax\njne repeat\nmov ah,2\nprint_loop:\npop dx\nor dl,30h\nint 21h\nloop print_loop\npop dx\npop cx\npop bx\npop ax\nret\nDECIMAL_OUT ENDP\n";
+					asmFile << "end main\n";
+				}		
 			}
 	;
 
@@ -124,6 +135,9 @@ program : program unit 		{
 				printstr(str);
 				$$->Ccode = str;
 				logline();
+
+				$$ = $1;
+				$$->code.append($2->code);
 			}
 	| unit					{	
 				writelog("program : unit");
@@ -225,6 +239,26 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 				printstr(str);
 				$$->Ccode = str;
 				logline();
+
+				$$ = makenewSymInfobyname($2->Getsname(),"ID");
+				SymbolInfo *temp = table.LookUp($2->Getsname());
+				$$->code = $2->Getsname() + " proc\n";
+				if($2->Getsname() != "main") $$->code.append("push ax\n");
+				if($2->Getsname() != "main") {
+					$$->code.append("mov ax, @data\n");
+					$$->code.append("mov ds, ax\n");
+				}
+				$$->code.append($7->code);
+				$$->code.append(temp->retlabel + ":\n");
+				if($2->Getsname() != "main") $$->code.append("pop ax\n");
+				if($2->Getsname() != "main") $$->code.append("ret\n");
+				if($2->Getsname() != "main") $$->code.append($2->Getsname() + " endp\n");
+				if($2->Getsname() == "main") {
+					$$->code.append("mov ah, 4ch\n");
+					$$->code.append("mov al, 0\n");
+					$$->code.append("int 21h\n");
+					$$->code.append($2->Getsname() + " endp\n");
+				}
 			}
  		;				
 
@@ -310,12 +344,17 @@ compound_statement : LCURL	{
 					SymbolInfo* temp = table.LookUp(parameters[i].Getsname());
 					temp->kindofID = parameters[i].kindofID;
 					temp->kindofVariable = parameters[i].kindofVariable;
+					
+					SymbolInfo* temp2 = table.LookUp(parameters[i].Getsname());
+					asmdatavars.append(temp2->Getsname() + to_string(temp2->tabid) + " dw ?\n");
 				}
 				parameters.clear();
 				//logFile << "After Inserting Parameters " << endl;
 				//table.PrintAllinFile(logFile);
 			}	statements 	{	table.PrintAllinFile(logFile);	} 	RCURL		{	
 				table.ExitScope(logFile);
+
+				$$ = $3;
 
 				logline();
 				string str = "";
@@ -491,7 +530,10 @@ statements : statement 				{
 				str.append($2->Ccode);
 				printstr(str);
 				$$->Ccode = str;
-	   			logline();	
+	   			logline();
+
+	   			$$ = $1;
+	   			$$->code.append($2->code);
 	   		}
 	   ;
 	   
@@ -543,7 +585,18 @@ statement : var_declaration 	{
 				$$->Ccode = str;
 				logline();
 
-				
+				$$ = $3;
+				char *label1 = newLabel();
+				char *label2 = newLabel();
+				$$->code.append(string(label1) + ":\n");
+				$$->code.append($4->code);
+				$$->code.append("mov ax , "+$4->Getsname()+"\n");
+				$$->code.append("cmp ax , 0\n");
+				$$->code.append("je "+string(label2)+"\n");
+				$$->code.append($7->code);
+				$$->code.append($5->code);
+				$$->code.append("jmp "+string(label1)+"\n");
+				$$->code.append(string(label2)+":\n");
 	  		}
 	  | IF LPAREN expression RPAREN statement %prec second_precedence	{	
 	  			writelog("statement : IF LPAREN expression RPAREN statement");	
@@ -558,6 +611,14 @@ statement : var_declaration 	{
 				printstr(str);
 				$$->Setsname(str);
 	  			logline();
+
+	  			$$=$3;		
+				char *label=newLabel();
+				$$->code.append("mov ax, "+$3->Getsname()+"\n");
+				$$->code.append("cmp ax, 0\n");
+				$$->code.append("je "+string(label)+"\n");
+				$$->code.append($5->code);
+				$$->code.append(string(label)+":\n");
 	  		}
 	  | IF LPAREN expression RPAREN statement ELSE statement 	{	
 	  			writelog("statement : IF LPAREN expression RPAREN statement ELSE statement");
@@ -575,7 +636,19 @@ statement : var_declaration 	{
 				str.append($7->Ccode);
 				printstr(str);
 				$$->Ccode = str;
-	  			logline();	
+	  			logline();
+
+	  			$$=$3;
+				char *elselabel=newLabel();
+				char *exitlabel=newLabel();
+				$$->code.append("mov ax,"+$3->Getsname()+"\n");
+				$$->code.append("cmp ax,0\n");
+				$$->code.append("je "+string(elselabel)+"\n");
+				$$->code.append($5->code);
+				$$->code.append("jmp "+string(exitlabel)+"\n");
+				$$->code.append(string(elselabel)+":\n");
+				$$->code.append($7->code);
+				$$->code.append(string(exitlabel)+":\n");
 	  		}
 	  | WHILE LPAREN expression RPAREN statement 	{	
 	  			writelog("statement : WHILE LPAREN expression RPAREN statement");
@@ -590,6 +663,18 @@ statement : var_declaration 	{
 				printstr(str);
 				$$->Ccode = str;
 	  			logline();
+
+	  			$$ = $1;
+	  			char * label = newLabel();
+				char * exit = newLabel();
+	  			$$->code = string(label) + ":\n"; 
+				$$->code.append($3->code);
+				$$->code.append("mov ax , "+$3->Getsname()+"\n");
+				$$->code.append("cmp ax , 0\n");
+				$$->code.append("je "+string(exit)+"\n");
+				$$->code.append($5->code);
+				$$->code.append("jmp "+string(label)+"\n");
+				$$->code.append(string(exit)+":\n");
 	  		}
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON 		{	
 	  			writelog("statement : PRINTLN LPAREN ID RPAREN SEMICOLON");
@@ -605,6 +690,10 @@ statement : var_declaration 	{
 	  			printstr(str);
 				$$->Ccode = str;
 	  			logline();
+
+	  			$$ = $1;
+	  			$$->code.append("mov ax, " + $3->Getsname() +"\n");
+				$$->code.append("call DECIMAL_OUT\n");
 	  		}
 	  |	PRINTLN LPAREN ID RPAREN error 	{	
 	  			writeerr("expected ;");
@@ -637,6 +726,8 @@ statement : var_declaration 	{
 				printstr(str);
 				$$->Ccode = str;
 	  			logline();
+
+
 	  		}
 	  |	RETURN expression error 		{	
 	  			writeerr("expected ;");
@@ -906,7 +997,7 @@ rel_expression	: simple_expression 	{
 			$$->code.append("mov "+string(temp1)+", 1\n");
 			$$->code.append(string(label2)+":\n");
 			$$->Setsname(string(temp1));
-			asmdatavars.push_back(string(temp1));
+			asmdatavars.append(string(temp1) + " dw ?\n");
 		}
 		;
 				
@@ -943,7 +1034,7 @@ simple_expression : term {
 			$$->code.append($3->code);
 			if($2->Getsname()=="+"){
 				char* temp = newTemp();
-				asmdatavars.push_back(string(temp));
+				asmdatavars.append(string(temp) + " dw ?\n");
 				$$->code.append("mov ax, " + $1->Getsname() + "\n");
 				$$->code.append("add ax, " + $3->Getsname() + "\n");
 				$$->code.append("mov " + string(temp) +" , ax\n");
@@ -951,7 +1042,7 @@ simple_expression : term {
 			}
 			else if($2->Getsname() == "-"){
 				char* temp = newTemp();
-				asmdatavars.push_back(string(temp));
+				asmdatavars.append(string(temp) + " dw ?\n");
 				$$->code.append("mov ax, " + $1->Getsname() + "\n");
 				$$->code.append("sub ax, " + $3->Getsname() + "\n");
 				$$->code.append("mov " + string(temp) +" , ax\n");
@@ -994,7 +1085,7 @@ term :	unary_expression 	{
 			$$->code.append("mov ax, "+ $1->Getsname()+"\n");
 			$$->code.append("mov bx, "+ $3->Getsname() +"\n");
 			char *temp=newTemp();
-			asmdatavars.push_back(string(temp));
+			asmdatavars.append(string(temp) + " dw ?\n");
 			if($2->Getsname()=="*"){
 				$$->code.append("mul bx\n");
 				$$->code.append("mov "+ string(temp) + ", ax\n");
@@ -1062,7 +1153,7 @@ unary_expression : ADDOP unary_expression  {
 			$$->Setsname($2->Getsname());
 			$$->code = $2->code;
 			char *temp=newTemp();
-			asmdatavars.push_back(string(temp));
+			asmdatavars.append(string(temp) + " dw ?\n");
 			$$->code.append("mov ax, " + $2->Getsname() + "\n");
 			$$->code.append("not ax\n");
 			$$->code.append("mov "+string(temp)+", ax");
@@ -1094,7 +1185,7 @@ factor	: variable 	{
 			$$->code = $1->code;
 			if($1->kindofID == "ARR"){
 				char *temp= newTemp();
-				asmdatavars.push_back(string(temp));
+				asmdatavars.append(string(temp) + " dw ?\n");
 				$$->code.append("mov ax, " + $1->Getsname() + "[bx]\n");
 				$$->code.append("mov " + string(temp) + ", ax\n");
 				$$->Setsname(string(temp));
@@ -1143,7 +1234,7 @@ factor	: variable 	{
 					writeerr(str);
 				}
 				else{
-					SymbolInfo *temp2 = makenewSymInfo($1->funcrettype);
+					SymbolInfo *temp2 = makenewSymInfo(temp->funcrettype);
 					$$ = temp2;
 				}
 			}
@@ -1314,6 +1405,7 @@ int main(int argc,char *argv[])
 
 	logFile.open("1505047_log.txt");
 	errorFile.open("1505047_err.txt");
+	asmFile.open("input.asm");
 	yyparse();
 	errorFile << "Total Lexical Errors 	: " << err_count << endl;
 	errorFile << "Total Semantic Errors 	: " << semErrors << endl;
@@ -1329,5 +1421,6 @@ int main(int argc,char *argv[])
 
 	logFile.close();
 	errorFile.close();
+	asmFile.close();
 	return 0;
 }
