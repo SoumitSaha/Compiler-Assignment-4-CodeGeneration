@@ -111,7 +111,7 @@ bool ScopeTable::Insert(string symname, string symtype){
         int i = 0;
         if(temp == 0){
             symPtr[index] = temp2;
-            cout << " Inserted in ScopeTable #" << Tabid << " at position " << index << "," << i << " " << symname << endl;
+            cout << " Inserted in ScopeTable #" << Tabid << " at position " << index << "," << i << " " << symname << " tabid : " << temp2->tabid << endl;
             return true;
         }
         i++;
@@ -120,7 +120,7 @@ bool ScopeTable::Insert(string symname, string symtype){
             i++;
         }
         temp->next = temp2;
-        cout << " Inserted in ScopeTable #" << Tabid << " at position " << index << "," << i << " " << symname << endl;
+        cout << " Inserted in ScopeTable #" << Tabid << " at position " << index << "," << i << " " << symname<< " tabid : " << temp2->tabid << endl;
         return true;
     }
     cout << " < " << symname << "," << symtype << " > already exists in curent scope" << endl;

@@ -319,6 +319,7 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 		id->funcrettype = tysp->kindofVariable;
 		temp->retlabel = string(newLabel());
 		id->retlabel = temp->retlabel;
+		return_label = temp->retlabel;
 		for(int i = 0; i<argsize(); i++){
 			temp->parameters.push_back(argumentlist[i]);					
 		}

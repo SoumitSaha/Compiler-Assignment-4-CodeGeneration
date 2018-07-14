@@ -114,8 +114,7 @@ Line 2 : statements : statement
 
 
 
-return 2*a ;
-
+2*a
 
 
 
@@ -136,8 +135,7 @@ return 2*a ;
 
 
 {
-return 2*a ;
-}
+2*a}
 
 
 
@@ -145,8 +143,7 @@ return 2*a ;
 
 int f(int a)
 {
-return 2*a ;
-}
+2*a}
 
 
 
@@ -243,126 +240,217 @@ int x ;
 
 
 
-Line 9 : variable : ID
+Line 8 : variable : ID
 
 
 
 x
 
 
-Line 9 : variable : ID
+Line 8 : variable : ID
 
 
 
 a
 
 
-Line 9 : factor : variable
+Line 8 : factor : variable
 
 
 
 a
 
 
-Line 9 : unary_expression : factor
+Line 8 : unary_expression : factor
 
 
 
 a
 
 
-Line 9 : term : unary_expression
+Line 8 : term : unary_expression
 
 
 
 a
 
 
-Line 9 : simple_expression : term
+Line 8 : simple_expression : term
 
 
 
 a
 
 
-Line 9 : variable : ID
+Line 8 : rel_expression : simple_expression
+
+
+
+a
+
+
+Line 8 : logic_expression : rel_expression
+
+
+
+a
+
+
+Line 8 : arguments : logic_expression
+
+
+
+a
+
+
+Line 8 : argument_list : arguments
+
+
+
+a
+
+
+Line 8 : factor : ID LPAREN argument_list RPAREN
+
+
+
+f(a)
+
+
+Line 8 : unary_expression : factor
+
+
+
+f(a)
+
+
+Line 8 : term : unary_expression
+
+
+
+f(a)
+
+
+Line 8 : simple_expression : term
+
+
+
+f(a)
+
+
+Line 8 : variable : ID
+
+
+
+a
+
+
+Line 8 : factor : variable
+
+
+
+a
+
+
+Line 8 : unary_expression : factor
+
+
+
+a
+
+
+Line 8 : term : unary_expression
+
+
+
+a
+
+
+Line 8 : simple_expression : simple_expression ADDOP term
+
+
+
+f(a)+a
+
+
+Line 8 : variable : ID
 
 
 
 b
 
 
-Line 9 : factor : variable
+Line 8 : factor : variable
 
 
 
 b
 
 
-Line 9 : unary_expression : factor
+Line 8 : unary_expression : factor
 
 
 
 b
 
 
-Line 9 : term : unary_expression
+Line 8 : term : unary_expression
 
 
 
 b
 
 
-Line 9 : simple_expression : simple_expression ADDOP term
+Line 8 : simple_expression : simple_expression ADDOP term
 
 
 
-a+b
+f(a)+a+b
 
 
-Line 9 : rel_expression : simple_expression
-
-
-
-a+b
-
-
-Line 9 : logic_expression : rel_expression
+Line 8 : rel_expression : simple_expression
 
 
 
-a+b
+f(a)+a+b
 
 
-Line 9 : expression : variable ASSIGNOP logic_expression
-
-
-
-x=a+b
-
-
-Line 9 : expression_statement : expression SEMICOLON
+Line 8 : logic_expression : rel_expression
 
 
 
-x=a+b;
+f(a)+a+b
+
+
+Line 8 : expression : variable ASSIGNOP logic_expression
 
 
 
-Line 9 : statement : expression_statement
+x=f(a)+a+b
+
+
+Line 8 : expression_statement : expression SEMICOLON
 
 
 
-x=a+b;
+x=f(a)+a+b;
 
 
 
-Line 9 : statements : statements statement
+Line 8 : statement : expression_statement
+
+
+
+x=f(a)+a+b;
+
+
+
+Line 8 : statements : statements statement
 
 
 
 int x ;
-x=a+b;
+x=f(a)+a+b;
 
 
 
@@ -435,9 +523,8 @@ Line 10 : statements : statements statement
 
 
 int x ;
-x=a+b;
-return x ;
-
+x=f(a)+a+b;
+x
 
 
 
@@ -468,9 +555,8 @@ return x ;
 
 {
 int x ;
-x=a+b;
-return x ;
-}
+x=f(a)+a+b;
+x}
 
 
 
@@ -479,9 +565,8 @@ return x ;
 int g(int a,int b)
 {
 int x ;
-x=a+b;
-return x ;
-}
+x=f(a)+a+b;
+x}
 
 
 
@@ -1010,8 +1095,7 @@ a=1;
 b=2;
 a=g(a,b);
 println(a);
-return 0 ;
-
+0
 
 
 
@@ -1046,8 +1130,7 @@ a=1;
 b=2;
 a=g(a,b);
 println(a);
-return 0 ;
-}
+0}
 
 
 
@@ -1060,8 +1143,7 @@ a=1;
 b=2;
 a=g(a,b);
 println(a);
-return 0 ;
-}
+0}
 
 
 

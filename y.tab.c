@@ -90,12 +90,12 @@ int warnings = 0;
 int argset = 0;
 int paraset = 0;
 string asmdatavars = "";
-
+string return_label;
 
 void yyerror(const char *s){
 }
 
-ofstream logFile, errorFile, asmFile;
+ofstream logFile, errorFile, asmFile, testFile;
 
 SymbolTable table(15);
 vector<SymbolInfo> parameters;
@@ -568,10 +568,10 @@ static const yytype_uint16 yyrline[] =
      224,   224,   266,   287,   301,   318,   330,   338,   354,   338,
      371,   385,   398,   412,   426,   440,   456,   469,   485,   497,
      514,   524,   540,   550,   560,   570,   601,   623,   653,   679,
-     698,   715,   732,   747,   758,   770,   783,   803,   834,   845,
-     876,   887,   940,   951,  1004,  1015,  1054,  1065,  1109,  1137,
-    1161,  1174,  1194,  1255,  1268,  1282,  1296,  1322,  1350,  1360,
-    1366,  1381
+     698,   715,   734,   749,   760,   772,   785,   808,   839,   850,
+     881,   892,   945,   956,  1009,  1020,  1059,  1070,  1114,  1142,
+    1166,  1179,  1199,  1259,  1272,  1286,  1300,  1326,  1354,  1364,
+    1370,  1385
 };
 #endif
 
@@ -1604,7 +1604,7 @@ yyreduce:
 				SymbolInfo *temp = table.LookUp((yyvsp[-5].value)->Getsname());
 				(yyval.value)->code = (yyvsp[-5].value)->Getsname() + " proc\n";
 				if((yyvsp[-5].value)->Getsname() != "main") (yyval.value)->code.append("push ax\n");
-				if((yyvsp[-5].value)->Getsname() != "main") {
+				if((yyvsp[-5].value)->Getsname() == "main") {
 					(yyval.value)->code.append("mov ax, @data\n");
 					(yyval.value)->code.append("mov ds, ax\n");
 				}
@@ -2223,13 +2223,15 @@ yyreduce:
 				(yyval.value)->Ccode = str;
 	  			logline();
 
-
+	  			(yyval.value) = (yyvsp[-1].value);
+	  			(yyval.value)->code.append("mov dx,"+(yyvsp[-1].value)->Getsname()+"\n");
+				(yyval.value)->code.append("jmp "+string(return_label)+"\n");
 	  		}
-#line 2229 "y.tab.c" /* yacc.c:1646  */
+#line 2231 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 732 "1505047.y" /* yacc.c:1646  */
+#line 734 "1505047.y" /* yacc.c:1646  */
     {	
 	  			writeerr("expected ;");
 
@@ -2243,11 +2245,11 @@ yyreduce:
 				(yyval.value)->Ccode = str;
 	  			logline();	
 	  		}
-#line 2247 "y.tab.c" /* yacc.c:1646  */
+#line 2249 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 747 "1505047.y" /* yacc.c:1646  */
+#line 749 "1505047.y" /* yacc.c:1646  */
     {	
 				writelog("expression_statement : SEMICOLON");
 
@@ -2259,11 +2261,11 @@ yyreduce:
 				(yyval.value)->Ccode = str;
 				logline();
 			}
-#line 2263 "y.tab.c" /* yacc.c:1646  */
+#line 2265 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 758 "1505047.y" /* yacc.c:1646  */
+#line 760 "1505047.y" /* yacc.c:1646  */
     {	
 				writelog("expression_statement : expression SEMICOLON");
 
@@ -2276,11 +2278,11 @@ yyreduce:
 				(yyval.value)->Ccode = str;
 				logline();
 			}
-#line 2280 "y.tab.c" /* yacc.c:1646  */
+#line 2282 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 770 "1505047.y" /* yacc.c:1646  */
+#line 772 "1505047.y" /* yacc.c:1646  */
     {	
 				writeerr("expected ;");
 
@@ -2292,17 +2294,19 @@ yyreduce:
 				(yyval.value)->Ccode = str;
 				logline();
 			}
-#line 2296 "y.tab.c" /* yacc.c:1646  */
+#line 2298 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 783 "1505047.y" /* yacc.c:1646  */
+#line 785 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("variable : ID");
 			SymbolInfo* temp = variabletoid((yyval.value),(yyvsp[0].value));
 			if (temp != 0){
 				(yyval.value) = temp;
 			}
+
+			SymbolInfo* tempid = table.LookUp((yyvsp[0].value)->Getsname());
 
 			logline();
 			string str = "";
@@ -2313,15 +2317,16 @@ yyreduce:
 			logline();
 
 			if((yyval.value) != 0){
-				(yyval.value)->Setsname((yyval.value)->Getsname() + to_string((yyval.value)->tabid));
+				(yyval.value)->Setsname((yyval.value)->Getsname() + to_string(tempid->tabid));
+				//testFile << to_string(tempid->tabid) << endl;
 	 		}
 
 		}
-#line 2321 "y.tab.c" /* yacc.c:1646  */
+#line 2326 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 803 "1505047.y" /* yacc.c:1646  */
+#line 808 "1505047.y" /* yacc.c:1646  */
     {
 	 		writelog("variable : ID LTHIRD expression RTHIRD");
 			SymbolInfo* temp = variabletoarray((yyval.value),(yyvsp[-3].value),(yyvsp[-1].value));
@@ -2351,11 +2356,11 @@ yyreduce:
 				(yyval.value)->kindofID = "ARR";
 	 		}
 	 	}
-#line 2355 "y.tab.c" /* yacc.c:1646  */
+#line 2360 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 834 "1505047.y" /* yacc.c:1646  */
+#line 839 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("expression : logic_expression");
 			(yyval.value) = (yyvsp[0].value);
@@ -2367,11 +2372,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2371 "y.tab.c" /* yacc.c:1646  */
+#line 2376 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 845 "1505047.y" /* yacc.c:1646  */
+#line 850 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("expression : variable ASSIGNOP logic_expression");	
 			SymbolInfo* temp = varassignlogic((yyval.value),(yyvsp[-2].value),(yyvsp[0].value));
@@ -2401,11 +2406,11 @@ yyreduce:
 				(yyval.value)->code.append("mov " + (yyvsp[-2].value)->Getsname() + ", ax\n");
 			}
 		}
-#line 2405 "y.tab.c" /* yacc.c:1646  */
+#line 2410 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 876 "1505047.y" /* yacc.c:1646  */
+#line 881 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("logic_expression : rel_expression");
 			(yyval.value) = (yyvsp[0].value);
@@ -2417,11 +2422,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2421 "y.tab.c" /* yacc.c:1646  */
+#line 2426 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 887 "1505047.y" /* yacc.c:1646  */
+#line 892 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("logic_expression : rel_expression LOGICOP rel_expression");
 			SymbolInfo* temp1 = rellogicrel((yyval.value),(yyvsp[-2].value),(yyvsp[-1].value),(yyvsp[0].value));
@@ -2473,11 +2478,11 @@ yyreduce:
 				(yyval.value)->Setsname(temp);	
 			}
 		}
-#line 2477 "y.tab.c" /* yacc.c:1646  */
+#line 2482 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 940 "1505047.y" /* yacc.c:1646  */
+#line 945 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("rel_expression : simple_expression");
 			(yyval.value) = (yyvsp[0].value);
@@ -2489,11 +2494,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2493 "y.tab.c" /* yacc.c:1646  */
+#line 2498 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 951 "1505047.y" /* yacc.c:1646  */
+#line 956 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("rel_expression : simple_expression RELOP simple_expression");
 			SymbolInfo* temp = simprelopsimp((yyval.value),(yyvsp[-2].value),(yyvsp[-1].value),(yyvsp[0].value));
@@ -2545,11 +2550,11 @@ yyreduce:
 			(yyval.value)->Setsname(string(temp1));
 			asmdatavars.append(string(temp1) + " dw ?\n");
 		}
-#line 2549 "y.tab.c" /* yacc.c:1646  */
+#line 2554 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 1004 "1505047.y" /* yacc.c:1646  */
+#line 1009 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("simple_expression : term");
 			(yyval.value) = (yyvsp[0].value);
@@ -2561,11 +2566,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2565 "y.tab.c" /* yacc.c:1646  */
+#line 2570 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 1015 "1505047.y" /* yacc.c:1646  */
+#line 1020 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("simple_expression : simple_expression ADDOP term");
 			SymbolInfo* temp = simexpaddopterm((yyval.value),(yyvsp[-2].value),(yyvsp[-1].value),(yyvsp[0].value));
@@ -2603,11 +2608,11 @@ yyreduce:
 				(yyval.value)->Setsname(string(temp));
 			}
 		}
-#line 2607 "y.tab.c" /* yacc.c:1646  */
+#line 2612 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 1054 "1505047.y" /* yacc.c:1646  */
+#line 1059 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("term : unary_expression");
 			(yyval.value) = (yyvsp[0].value);
@@ -2619,11 +2624,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2623 "y.tab.c" /* yacc.c:1646  */
+#line 2628 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 1065 "1505047.y" /* yacc.c:1646  */
+#line 1070 "1505047.y" /* yacc.c:1646  */
     {
      		writelog("term : term MULOP unary_expression");
      		SymbolInfo* temp2 = termmulopunary((yyval.value),(yyvsp[-2].value),(yyvsp[-1].value),(yyvsp[0].value));
@@ -2666,11 +2671,11 @@ yyreduce:
 			}
 			
      	}
-#line 2670 "y.tab.c" /* yacc.c:1646  */
+#line 2675 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 1109 "1505047.y" /* yacc.c:1646  */
+#line 1114 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("unary_expression : ADDOP unary_expression");
 			SymbolInfo* temp2 = addopuna((yyval.value),(yyvsp[-1].value),(yyvsp[0].value));
@@ -2699,11 +2704,11 @@ yyreduce:
 				(yyval.value)->code.append("mov " + (yyvsp[0].value)->Getsname() + " , ax\n");
 			}
 		}
-#line 2703 "y.tab.c" /* yacc.c:1646  */
+#line 2708 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 1137 "1505047.y" /* yacc.c:1646  */
+#line 1142 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("unary_expression : NOT unary_expression");
 			SymbolInfo* temp2 = notuna((yyval.value),(yyvsp[0].value));
@@ -2728,11 +2733,11 @@ yyreduce:
 			(yyval.value)->code.append("not ax\n");
 			(yyval.value)->code.append("mov "+string(temp)+", ax");
 		}
-#line 2732 "y.tab.c" /* yacc.c:1646  */
+#line 2737 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 1161 "1505047.y" /* yacc.c:1646  */
+#line 1166 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("unary_expression : factor");
 			(yyval.value) = (yyvsp[0].value);
@@ -2744,11 +2749,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2748 "y.tab.c" /* yacc.c:1646  */
+#line 2753 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 1174 "1505047.y" /* yacc.c:1646  */
+#line 1179 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("factor : variable");
 
@@ -2769,11 +2774,11 @@ yyreduce:
 				(yyval.value)->Setsname(string(temp));
 			}
 		}
-#line 2773 "y.tab.c" /* yacc.c:1646  */
+#line 2778 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 1194 "1505047.y" /* yacc.c:1646  */
+#line 1199 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("factor : ID LPAREN argument_list RPAREN");
 			SymbolInfo *temp = makenewemptySymInfo();
@@ -2819,7 +2824,6 @@ yyreduce:
 				else{
 					SymbolInfo *temp2 = makenewSymInfo(temp->funcrettype);
 					(yyval.value) = temp2;
-					errorFile << "func ret type " << (yyval.value)->kindofVariable << endl;
 				}
 			}
 
@@ -2835,11 +2839,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2839 "y.tab.c" /* yacc.c:1646  */
+#line 2843 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 1255 "1505047.y" /* yacc.c:1646  */
+#line 1259 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("factor : LPAREN expression RPAREN"); 
 			(yyval.value)=(yyvsp[-1].value);
@@ -2853,11 +2857,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2857 "y.tab.c" /* yacc.c:1646  */
+#line 2861 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 1268 "1505047.y" /* yacc.c:1646  */
+#line 1272 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("factor : CONST_INT");
 			(yyvsp[0].value)->kindofVariable = "INT";
@@ -2872,11 +2876,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2876 "y.tab.c" /* yacc.c:1646  */
+#line 2880 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 1282 "1505047.y" /* yacc.c:1646  */
+#line 1286 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("factor : CONST_FLOAT");
 			(yyvsp[0].value)->kindofVariable = "FLOAT";
@@ -2891,11 +2895,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2895 "y.tab.c" /* yacc.c:1646  */
+#line 2899 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 1296 "1505047.y" /* yacc.c:1646  */
+#line 1300 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("factor : variable INCOP");
 			SymbolInfo * temp = varinc((yyvsp[-1].value));
@@ -2922,11 +2926,11 @@ yyreduce:
 			//$$->code.append($1->tabid);
 			(yyval.value)->code.append(" , ax\n");
 		}
-#line 2926 "y.tab.c" /* yacc.c:1646  */
+#line 2930 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 1322 "1505047.y" /* yacc.c:1646  */
+#line 1326 "1505047.y" /* yacc.c:1646  */
     {
 			writelog("factor : variable DECOP");
 			SymbolInfo * temp = vardec((yyvsp[-1].value));
@@ -2953,11 +2957,11 @@ yyreduce:
 			//$$->code.append($1->tabid);
 			(yyval.value)->code.append(" , ax\n");
 		}
-#line 2957 "y.tab.c" /* yacc.c:1646  */
+#line 2961 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 1350 "1505047.y" /* yacc.c:1646  */
+#line 1354 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("argument_list : arguments");
 
@@ -2968,20 +2972,20 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 2972 "y.tab.c" /* yacc.c:1646  */
+#line 2976 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 1360 "1505047.y" /* yacc.c:1646  */
+#line 1364 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("argument_list : empty");
 			argset = 0;
 		}
-#line 2981 "y.tab.c" /* yacc.c:1646  */
+#line 2985 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 1366 "1505047.y" /* yacc.c:1646  */
+#line 1370 "1505047.y" /* yacc.c:1646  */
     {	
 			writelog("arguments : arguments COMMA logic_expression");
 			argumentlist.push_back((yyvsp[0].value)->kindofVariable);
@@ -2997,11 +3001,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 		}
-#line 3001 "y.tab.c" /* yacc.c:1646  */
+#line 3005 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 1381 "1505047.y" /* yacc.c:1646  */
+#line 1385 "1505047.y" /* yacc.c:1646  */
     {	
 	      	writelog("arguments : logic_expression");
 	      	argumentlist.push_back((yyvsp[0].value)->kindofVariable);
@@ -3015,11 +3019,11 @@ yyreduce:
 			(yyval.value)->Ccode = str;
 			logline();
 	    }
-#line 3019 "y.tab.c" /* yacc.c:1646  */
+#line 3023 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 3023 "y.tab.c" /* yacc.c:1646  */
+#line 3027 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3247,7 +3251,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1397 "1505047.y" /* yacc.c:1906  */
+#line 1401 "1505047.y" /* yacc.c:1906  */
 
 int main(int argc,char *argv[])
 {
@@ -3261,6 +3265,7 @@ int main(int argc,char *argv[])
 	logFile.open("1505047_log.txt");
 	errorFile.open("1505047_err.txt");
 	asmFile.open("input.asm");
+	//testFile.open("test.txt");
 	yyparse();
 	errorFile << "Total Lexical Errors 	: " << err_count << endl;
 	errorFile << "Total Semantic Errors 	: " << semErrors << endl;
@@ -3277,5 +3282,6 @@ int main(int argc,char *argv[])
 	logFile.close();
 	errorFile.close();
 	asmFile.close();
+	//testFile.close();
 	return 0;
 }

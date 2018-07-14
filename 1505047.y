@@ -25,12 +25,12 @@ int warnings = 0;
 int argset = 0;
 int paraset = 0;
 string asmdatavars = "";
-
+string return_label;
 
 void yyerror(const char *s){
 }
 
-ofstream logFile, errorFile, asmFile;
+ofstream logFile, errorFile, asmFile, testFile;
 
 SymbolTable table(15);
 vector<SymbolInfo> parameters;
@@ -244,7 +244,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN {
 				SymbolInfo *temp = table.LookUp($2->Getsname());
 				$$->code = $2->Getsname() + " proc\n";
 				if($2->Getsname() != "main") $$->code.append("push ax\n");
-				if($2->Getsname() != "main") {
+				if($2->Getsname() == "main") {
 					$$->code.append("mov ax, @data\n");
 					$$->code.append("mov ds, ax\n");
 				}
@@ -727,7 +727,9 @@ statement : var_declaration 	{
 				$$->Ccode = str;
 	  			logline();
 
-
+	  			$$ = $2;
+	  			$$->code.append("mov dx,"+$2->Getsname()+"\n");
+				$$->code.append("jmp "+string(return_label)+"\n");
 	  		}
 	  |	RETURN expression error 		{	
 	  			writeerr("expected ;");
@@ -787,6 +789,8 @@ variable : ID 	{
 				$$ = temp;
 			}
 
+			SymbolInfo* tempid = table.LookUp($1->Getsname());
+
 			logline();
 			string str = "";
 			str.append($1->Getsname());
@@ -796,7 +800,8 @@ variable : ID 	{
 			logline();
 
 			if($$ != 0){
-				$$->Setsname($$->Getsname() + to_string($$->tabid));
+				$$->Setsname($$->Getsname() + to_string(tempid->tabid));
+				//testFile << to_string(tempid->tabid) << endl;
 	 		}
 
 		}	
@@ -1406,6 +1411,7 @@ int main(int argc,char *argv[])
 	logFile.open("1505047_log.txt");
 	errorFile.open("1505047_err.txt");
 	asmFile.open("input.asm");
+	//testFile.open("test.txt");
 	yyparse();
 	errorFile << "Total Lexical Errors 	: " << err_count << endl;
 	errorFile << "Total Semantic Errors 	: " << semErrors << endl;
@@ -1422,5 +1428,6 @@ int main(int argc,char *argv[])
 	logFile.close();
 	errorFile.close();
 	asmFile.close();
+	//testFile.close();
 	return 0;
 }

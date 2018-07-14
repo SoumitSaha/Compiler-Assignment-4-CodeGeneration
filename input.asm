@@ -7,42 +7,57 @@ a3 dw ?
 b3 dw ?
 x3 dw ?
 t1 dw ?
+t2 dw ?
 a4 dw ?
 b4 dw ?
 .code
 f proc
 push ax
-mov ax, @data
-mov ds, ax
+mov ax, 2
+mov bx, a2
+mul bx
+mov t0, ax
+mov dx,t0
+jmp L0
 L0:
 pop ax
 ret
 f endp
 g proc
 push ax
-mov ax, @data
-mov ds, ax
-mov ax, a0
-add ax, b0
-mov t1 , ax
-mov ax, a0
-add ax, b0
+mov ax, 
+add ax, a3
 mov t1 , ax
 mov ax, t1
-mov x0, ax
+add ax, b3
+mov t2 , ax
+mov ax, 
+add ax, a3
+mov t1 , ax
+mov ax, t1
+add ax, b3
+mov t2 , ax
+mov ax, t2
+mov x3, ax
+mov dx,x3
+jmp L1
 L1:
 pop ax
 ret
 g endp
 main proc
+mov ax, @data
+mov ds, ax
 mov ax, 1
-mov a0, ax
+mov a4, ax
 mov ax, 2
-mov b0, ax
+mov b4, ax
 mov ax, 
-mov a0, ax
+mov a4, ax
 mov ax, a
 call DECIMAL_OUT
+mov dx,0
+jmp L2
 L2:
 mov ah, 4ch
 mov al, 0
