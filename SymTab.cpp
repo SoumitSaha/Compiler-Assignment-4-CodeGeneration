@@ -75,14 +75,12 @@ SymbolInfo * ScopeTable::LookUp(string sym)
     SymbolInfo *temp;
     temp = symPtr[index];
     if (temp == 0) {
-        //cout << " Not Found" << endl;
         return 0;
     }
     else{
         int i = 0;
         while(temp != 0){
             if (temp->Getsname() == sym) {
-                //cout << " Found at ScopeTable# " << Tabid << " at position " << index << "," << i << endl;
                 return temp;
             }
             else {
@@ -91,7 +89,6 @@ SymbolInfo * ScopeTable::LookUp(string sym)
             }
         }
     }
-    //cout << " Not Found" << endl;
     return 0;
 }
 
@@ -103,6 +100,7 @@ bool ScopeTable::Insert(string symname, string symtype){
     if(temp == 0){
         SymbolInfo *temp2;
         temp2 = new SymbolInfo(symname,symtype);
+        temp2->tabid = Tabid;
         unsigned long int index;
         char *cstr = new char[symname.length() + 1];
         strcpy(cstr, symname.c_str());
@@ -144,26 +142,20 @@ void ScopeTable::print(){
 }
 
 void ScopeTable::printinFile(ofstream& logFile){
-    //fprintf(logout,"\n");
     logFile << endl ;
     SymbolInfo *temp;
-    //fprintf(logout," ScopeTable# %d\n",Tabid);
     logFile << " ScopeTable# " << Tabid << endl;
     for(int i = 0; i < bucSize; i++){
         temp = symPtr[i];
         if(temp != 0){
-            //fprintf(logout," %d -->",i);
             logFile << i << "-->";
             while(temp != 0){
-                //fprintf(logout," < %s, %s > ",temp->Getstype().data(),temp->Getsname().data());
                 logFile << " < " << temp->Getstype() << ", " << temp->Getsname() << " > " << endl;
                 temp = temp->next;
             }
-            //fprintf(logout,"\n");
             logFile << endl << endl;
         }
     }
-    //fprintf(logout,"\n");
     logFile << endl ;
 }
 
@@ -194,12 +186,10 @@ bool ScopeTable::Delete(string sym){
     if (par == 0){
         symPtr[index] = temp->next;
         delete temp;
-        //cout << " Deleted entry at " << index << "," << i << " from current ScopeTable" << endl;
         return true;
     }
     par->next = temp->next;
     delete temp;
-    //cout << " Deleted entry at " << index << "," << i << " from current ScopeTable" << endl;
     return true;
 }
 
@@ -246,12 +236,12 @@ void SymbolTable::EnterScope(ofstream& logFile){
 
 void SymbolTable::ExitScope(ofstream& logFile){
     if(curTabid >= 1){
-        curTabid--;
+        //curTabid--;
         ScopeTable *temp;
         temp = current;
         current = current->parentScope;
         delete temp;
-        logFile << " ScopeTable with id " << curTabid + 1 << " removed" << endl <<endl; 
+        logFile << " ScopeTable with id " << curTabid << " removed" << endl <<endl; 
     }
 }
 
@@ -307,6 +297,5 @@ void SymbolTable::PrintAllinFile(ofstream& logFile){
     while(temp != 0){
         temp->printinFile(logFile);
         temp = temp->parentScope;
-        //cout << endl;
     }
 }

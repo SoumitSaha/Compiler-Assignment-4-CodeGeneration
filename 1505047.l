@@ -15,9 +15,12 @@ void yyerror(char *);
 
 int line_count=1;
 int err_count = 0;
-//int elsepos;
-//int logicoppos;
-//int reloppos;
+extern ofstream logFile, errorFile;
+
+void writeerr2(string msg){
+	errorFile << "Error at line " << line_count << " : " << msg <<  endl << endl;
+	err_count++;
+}
 
 %}
 
@@ -310,15 +313,21 @@ UNRECOGNIZED_CHAR .
         			}
     			}
     			line_count = line_count+p;
-    			err_count++;
+    			writeerr2("Unfinished char");
 				}
 
 {INVALIDSUFFPREF}		 {
-    			err_count++;
+				writeerr2("Invalid suffix or prefix");
+				SymbolInfo* s = new SymbolInfo(string(yytext),"ID"); // It may need to be corrected
+				yylval.value = s;
+				return ID;
 				}	
 
 {EMPTYCHAR}		{
-    			err_count++;
+    			writeerr2("Empty char");
+    			SymbolInfo* s = new SymbolInfo(string(yytext),"CONST_CHAR"); // It may need to be corrected
+				yylval.value = s;
+				return CONST_CHAR;
 				}
 
 {MULTI_CHAR}	{
@@ -329,7 +338,10 @@ UNRECOGNIZED_CHAR .
         			}
     			}
     			line_count = line_count+p;
-    			err_count++;
+    			writeerr2("Multi char");
+    			SymbolInfo* s = new SymbolInfo(string(yytext),"CONST_CHAR"); // It may need to be corrected
+				yylval.value = s;
+				return CONST_CHAR;
 				}
 
 {STRING}		{
@@ -381,7 +393,10 @@ UNRECOGNIZED_CHAR .
         			}
     			}
     			line_count = line_count+p;
-    			err_count++;
+    			writeerr2("Unfinished string");
+    			SymbolInfo* s = new SymbolInfo(string(yytext),"STRING");
+                yylval.value = s;
+				return STRING;
 			}
 
 {SINGLE_LINE_COMMENT}|{MULTILINE_COMMENT_form1}|{MULTILINE_COMMENT_form2}	 {
@@ -403,19 +418,25 @@ UNRECOGNIZED_CHAR .
         			}
     			}
     			line_count = line_count+p;
-    			err_count++;
+    			writeerr2("Unfinished comment");
 			}
 
 {ILL_FORMED_NUMBER} 	{
-    			err_count++;
+    			writeerr2("Ill formed number");
+    			SymbolInfo* s = new SymbolInfo(string(yytext),"CONST_INT");
+				yylval.value = s;
+				return CONST_INT;
 			}
 
 {TOO_MANY_DEC_POINT} 	{
-    			err_count++;
+    			writeerr2("Too many decimal point in number");
+    			SymbolInfo* s = new SymbolInfo(string(yytext),"CONST_INT");
+				yylval.value = s;
+				return CONST_INT;
 			}			
 
 {UNRECOGNIZED_CHAR} 	{
-    			err_count++;
+    			writeerr2("Unrecognized char");
 			}	
 
 %%

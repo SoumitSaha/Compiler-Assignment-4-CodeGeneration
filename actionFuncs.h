@@ -138,6 +138,7 @@ void func_dec(SymbolInfo * tysp, SymbolInfo * id){
 		SymbolInfo* temp2 = table.LookUp(id->Getsname());
 		temp2->kindofID = "FUNC";
 		temp2->funcrettype = tysp->kindofVariable;
+		asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
 		id->funcrettype = tysp->kindofVariable;
 		int sizearg = argsize();
 		for(int i = 0; i<argsize(); i++){
@@ -172,6 +173,7 @@ void declistcomid(SymbolInfo * id){
 			temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "VAR";
+			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
 		}
 	}
 }
@@ -199,6 +201,7 @@ void declistarr(SymbolInfo * id, SymbolInfo * constint){
 			temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "ARR";
+			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
 		}
 		return;
 	}
@@ -226,6 +229,7 @@ void onlyid(SymbolInfo * id){
 			SymbolInfo* temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "VAR";
+			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
 		}
 	}
 }
@@ -253,6 +257,7 @@ void onlyarray(SymbolInfo * id, SymbolInfo * constint){
 			temp2 = table.LookUp(id->Getsname());
 			temp2->kindofVariable = lastVarType;
 			temp2->kindofID = "ARR";
+			asmdatavars.push_back(temp2->Getsname() + to_string(temp2->tabid));
 		}
 	}
 }
@@ -316,6 +321,7 @@ void func_def(SymbolInfo * tysp, SymbolInfo * id){
 		SymbolInfo* temp = table.LookUp(id->Getsname());
 		temp->kindofID = "FUNC";
 		temp->funcrettype = tysp->kindofVariable;
+		asmdatavars.push_back(temp->Getsname() + to_string(temp->tabid));
 		id->funcrettype = tysp->kindofVariable;
 		for(int i = 0; i<argsize(); i++){
 			temp->parameters.push_back(argumentlist[i]);					
@@ -358,6 +364,7 @@ SymbolInfo * varassignlogic(SymbolInfo* exp, SymbolInfo* var, SymbolInfo* log_ex
 SymbolInfo * rellogicrel(SymbolInfo* log_exp, SymbolInfo* rel_exp1, SymbolInfo* log_op, SymbolInfo* rel_exp3){
 	cout << "rellogicrel func" << endl;
 	SymbolInfo* temp = makenewSymInfo("INT");
+	temp->kindofID = "VAR";
 	string logicop = log_op->Getsname();
 	return temp;
 }
@@ -385,6 +392,7 @@ SymbolInfo* vardec(SymbolInfo* var){
 SymbolInfo* simprelopsimp(SymbolInfo* rel_exp, SymbolInfo* sim_exp1, SymbolInfo* rel_op, SymbolInfo* sim_exp3){
 	cout << "simprelopsimp func" << endl;
 	SymbolInfo* temp = makenewSymInfo("INT");
+	temp->kindofID = "VAR";
 	string relop = rel_op->Getsname();
 	string simex1 = sim_exp1->kindofVariable;
 	string simex3 = sim_exp3->kindofVariable;
@@ -404,28 +412,34 @@ SymbolInfo* termmulopunary(SymbolInfo* term1, SymbolInfo* term2, SymbolInfo* mul
 			if(una_exp->kindofID == "VAR"){		
 				if(term2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "INT" && term2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
 			else if(una_exp->kindofID == "ARR"){		
 				if(term2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "INT" && term2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
@@ -434,28 +448,34 @@ SymbolInfo* termmulopunary(SymbolInfo* term1, SymbolInfo* term2, SymbolInfo* mul
 			if(una_exp->kindofID == "VAR"){		
 				if(term2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "INT" && term2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
 			else if(una_exp->kindofID == "ARR"){		
 				if(term2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(una_exp->kindofVariable == "INT" && term2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
@@ -464,14 +484,17 @@ SymbolInfo* termmulopunary(SymbolInfo* term1, SymbolInfo* term2, SymbolInfo* mul
 	else if(mulop == "/"){
 		if(term2->kindofVariable == "FLOAT"){
 			SymbolInfo* temp = makenewSymInfo("FLOAT");
+			temp->kindofID = "VAR";
 			return temp;
 		}
 		else if(una_exp->kindofVariable == "FLOAT"){
 			SymbolInfo* temp = makenewSymInfo("FLOAT");
+			temp->kindofID = "VAR";
 			return temp;
 		}
 		else if(una_exp->kindofVariable == "INT" && term2->kindofVariable == "INT"){
 			SymbolInfo* temp = makenewSymInfo("INT");
+			temp->kindofID = "VAR";
 			return temp;
 		}
 	}
@@ -496,28 +519,34 @@ SymbolInfo* simexpaddopterm(SymbolInfo* sim_exp1,SymbolInfo* sim_exp2,SymbolInfo
 			if(term->kindofID == "VAR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
 			else if(term->kindofID == "ARR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
@@ -526,27 +555,33 @@ SymbolInfo* simexpaddopterm(SymbolInfo* sim_exp1,SymbolInfo* sim_exp2,SymbolInfo
 			if(term->kindofID == "VAR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
 			else if(term->kindofID == "ARR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
@@ -557,28 +592,34 @@ SymbolInfo* simexpaddopterm(SymbolInfo* sim_exp1,SymbolInfo* sim_exp2,SymbolInfo
 			if(term->kindofID == "VAR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
 			else if(term->kindofID == "ARR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
@@ -587,28 +628,34 @@ SymbolInfo* simexpaddopterm(SymbolInfo* sim_exp1,SymbolInfo* sim_exp2,SymbolInfo
 			if(term->kindofID == "VAR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}
 			else if(term->kindofID == "ARR"){						
 				if(sim_exp2->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "FLOAT"){
 					SymbolInfo* temp = makenewSymInfo("FLOAT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 				else if(term->kindofVariable == "INT" && sim_exp2->kindofVariable == "INT"){
 					SymbolInfo* temp = makenewSymInfo("INT");
+					temp->kindofID = "VAR";
 					return temp;
 				}
 			}

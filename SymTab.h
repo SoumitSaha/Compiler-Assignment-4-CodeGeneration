@@ -1,11 +1,11 @@
-#include<string>
-#include<cstring>
-#include<iostream>
-#include<fstream>
+#include <string>
+#include <cstring>
+#include <iostream>
+#include <fstream>
 #include <cstdio>
-#include<stdio.h>
-#include<vector>
-#include<fstream>
+#include <stdio.h>
+#include <vector>
+#include <fstream>
 
 
 
@@ -25,8 +25,11 @@ class SymbolInfo
         std::string kindofID; 
         std::string kindofVariable;
         std::string funcrettype;
+        std::string code;
+        std::string Ccode;
         bool funcdefined;
         std::vector <std::string> parameters;
+        int tabid;
 
         SymbolInfo(std::string nval, std::string tval);
         SymbolInfo(std::string tval);

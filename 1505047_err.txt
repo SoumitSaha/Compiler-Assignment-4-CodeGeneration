@@ -1,0 +1,3 @@
+Total Lexical Errors 	: 0
+Total Semantic Errors 	: 0
+Total Warnings 	: 0
